@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+    .map {
+        position: relative;
+        width: /*(4*256)*/1024px;
+        /* Uses 675px instead of 3*256px because that's closer to the right height.  */
+        height: /*(3*256)*/675px;
+    }
+    .map>* {
+        position: absolute;
+    }
+    .mark {
+        width: 2px;
+        height: 2px;
+        margin-left: -1px;
+        margin-right: -1px;
+        border-radius: 50%;
+    }
+    </style>
+    <script src=/socket.io/socket.io.js></script>
+    <script>
+    var socket = io.connect();
+    var blacklist = ['S.MONSTER_MOVE', 'S.COMPRESSED_UPDATE_OBJECT', 'S.threatUpdate', 'S.emote'];
+    socket.on('log', function(op, data) {
+        op = op.replace(/S\.SMSG_/, 'S.').replace(/C\.CMSG_/, 'C.');
+        if(blacklist.indexOf(op) !== -1)
+            return;
+        console.groupCollapsed(op);
+        console.log(data);
+        console.groupEnd();
+    });
+    socket.on('updatePosition', function(pos) {
+        for(var i in pos)
+            document.getElementById('pos_'+i).textContent = pos[i];
+    });
+    </script>
+</head>
+<body>
+<button onclick="socket.emit('reload')">Reload</button><br>
+X: <span id=pos_x></span> Y: <span id=pos_y></span> Z: <span id=pos_z></span><br>
+Orientation: <span id=pos_orientation></span><br>
+Distance: <span id=pos_distance></span>
+</body>
+</html>
